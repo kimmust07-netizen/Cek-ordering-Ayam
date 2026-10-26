@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Input & PO Pre-Order Kebutuhan Ayam Store</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .badge-supplier {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP HEADER BANNER -->
+  <header class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border-b border-indigo-900/50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 bg-indigo-600/30 rounded-xl flex items-center justify-center border border-indigo-400/30 shadow-inner">
+            <i class="fa-solid me-0 fa-drumstick-bite text-2xl text-amber-400"></i>
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              Sistem Kebutuhan & Jadwal PO Ayam
+              <span class="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-xs px-2.5 py-0.5 rounded-full font-semibold">Database Nov '26</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-indigo-200 mt-0.5">Pemetaan Order 3 Supplier (Japfa 50%, Afco 30%, Delta 20%) & Jadwal Kirim 65 Store Registered</p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 bg-slate-800/80 p-1.5 rounded-xl border border-slate-700 text-xs">
+          <div class="px-3 py-1.5 rounded-lg bg-indigo-600/30 text-indigo-200 border border-indigo-500/30 font-medium">
+            <i class="fa-solid fa-store text-amber-400 mr-1.5"></i> <span id="stat-total-stores">65</span> Store Terdaftar
+          </div>
+          <div class="px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-300 font-medium">
+            <i class="fa-solid fa-truck-fast text-emerald-400 mr-1.5"></i> Min 4x Order/Bln
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
+
+    <!-- TOP CONTROL ROW: FORM + SUMMARY -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- FORM INPUT SECTION -->
+      <div class="lg:col-span-5 bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-500 via-sky-500 to-emerald-500"></div>
+        
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-2.5">
+            <span class="w-8 h-8 bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center font-bold text-sm">1</span>
+            <h2 class="text-lg font-bold text-slate-900">Input Order & Pilih Store</h2>
+          </div>
+          <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-md">65 Store Loaded</span>
+        </div>
+
+        <form id="orderForm" onsubmit="calculateAndSaveOrder(event)" class="space-y-4">
+          
+          <!-- 1. Pilihan Store (Dropdown Datalist 65 Store) -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              1. Pilih Nama Store <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input type="text" id="inputStore" list="storeOptions" placeholder="Ketik atau pilih nama store (Contoh: AGS JOMBANG PLOSO)" required
+                     onchange="autoFillRegion(this.value)"
+                     class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-semibold text-slate-800">
+              <i class="fa-solid fa-shop absolute left-3.5 top-3 text-slate-400"></i>
+            </div>
+            <datalist id="storeOptions"></datalist>
+            <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+              <i class="fa-solid fa-circle-info text-indigo-400"></i> Terkoneksi ke 65 Database Store Excel PO Japfa
+            </p>
+          </div>
+
+          <!-- 2. Nama Area / Wilayah -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              2. Wilayah / Nama Area <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input type="text" id="inputArea" placeholder="Contoh: Wilayah 1 (Jombang - Kediri - Madiun)" required
+                     class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-slate-800">
+              <i class="fa-solid fa-map-location-dot absolute left-3.5 top-3 text-slate-400"></i>
+            </div>
+            <div id="scheduleDaysBadge" class="mt-1.5 hidden flex items-center gap-1.5">
+              <span class="text-[11px] text-slate-500 font-medium">Jadwal Kirim Reguler:</span>
+              <span id="badgeDays" class="text-[11px] bg-indigo-100 text-indigo-800 font-bold px-2 py-0.5 rounded-md border border-indigo-200"></span>
+            </div>
+          </div>
+
+          <!-- 3. Jumlah Kebutuhan Dalam 1 Bulan -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              3. Kebutuhan Ayam (1 Bulan) <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <input type="number" id="inputQty" placeholder="Masukkan total ekor (Contoh: 280)" min="10" step="10" required
+                     class="w-full pl-10 pr-16 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all font-bold text-indigo-900 text-base">
+              <i class="fa-solid fa-weight-hanging absolute left-3.5 top-3.5 text-slate-400"></i>
+              <span class="absolute right-3.5 top-2.5 text-xs font-bold text-slate-400 bg-slate-200 px-2 py-1 rounded-md">EKOR</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1">Sistem otomatis membulatkan per kelipatan 10 ekor.</p>
+          </div>
+
+          <!-- 4. Pilih Bulan -->
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              4. Periode Bulan Order <span class="text-rose-500">*</span>
+            </label>
+            <div class="relative">
+              <select id="inputMonth" required
+                      class="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all appearance-none font-semibold text-slate-800">
+                <option value="November 2026" selected>November 2026 (PO Active Data)</option>
+                <option value="Desember 2026">Desember 2026</option>
+                <option value="Januari 2027">Januari 2027</option>
+                <option value="Februari 2027">Februari 2027</option>
+                <option value="Maret 2027">Maret 2027</option>
+              </select>
+              <i class="fa-solid fa-calendar-days absolute left-3.5 top-3 text-slate-400"></i>
+              <i class="fa-solid fa-chevron-down absolute right-3.5 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+            </div>
+          </div>
+
+          <!-- SUBMIT BUTTON -->
+          <div class="pt-2">
+            <button type="submit" 
+                    class="w-full bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white font-bold py-3 px-6 rounded-xl shadow-md hover:shadow-indigo-500/20 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+              <i class="fa-solid fa-calculator text-amber-300"></i>
+              <span>Hitung Pembagian & Simpan Order</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- ALLOCATION BREAKDOWN DASHBOARD CARD -->
+      <div class="lg:col-span-7 space-y-6">
+        
+        <!-- Welcome / Active Result Card -->
+        <div id="resultContainer" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 relative">
+          
+          <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <span class="w-8 h-8 bg-emerald-100 text-emerald-700 rounded-lg flex items-center justify-center font-bold text-sm">2</span>
+              <div>
+                <h2 class="text-lg font-bold text-slate-900">Hasil Pemetaan Supplier & Jadwal Kirim</h2>
+                <p id="resultSubtitle" class="text-xs text-slate-500">Silakan input data store di sebelah kiri untuk simulasi order.</p>
+              </div>
+            </div>
+            <span id="activeStoreBadge" class="hidden text-xs bg-indigo-50 text-indigo-700 border border-indigo-200 px-3 py-1 rounded-full font-bold"></span>
+          </div>
+
+          <!-- SUPPLIER 3-CARD GRID -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            
+            <!-- JAPFA CARD (50%) -->
+            <div class="bg-gradient-to-b from-blue-50/80 to-indigo-50/40 border border-blue-200/80 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between shadow-sm">
+              <div class="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-bl-lg">50%</div>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full bg-blue-600"></span>
+                  <h3 class="font-extrabold text-blue-900 text-sm tracking-wide">JAPFA</h3>
+                </div>
+                <div class="text-2xl font-black text-slate-900 my-1" id="japfaQty">0 <span class="text-xs font-semibold text-slate-500">ekor</span></div>
+                <div class="text-[11px] text-blue-700 font-medium" id="japfaFreq">4-8x Kirim / Bulan</div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-blue-200/60 text-[11px] text-slate-600 flex justify-between items-center">
+                <span>Rata-rata/Kirim:</span>
+                <span class="font-bold text-blue-900" id="japfaPerShipment">- ekor</span>
+              </div>
+            </div>
+
+            <!-- AFCO CARD (30%) -->
+            <div class="bg-gradient-to-b from-amber-50/80 to-orange-50/40 border border-amber-200/80 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between shadow-sm">
+              <div class="absolute top-0 right-0 bg-amber-500 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-bl-lg">30%</div>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                  <h3 class="font-extrabold text-amber-900 text-sm tracking-wide">AFCO</h3>
+                </div>
+                <div class="text-2xl font-black text-slate-900 my-1" id="afcoQty">0 <span class="text-xs font-semibold text-slate-500">ekor</span></div>
+                <div class="text-[11px] text-amber-700 font-medium" id="afcoFreq">4-8x Kirim / Bulan</div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-amber-200/60 text-[11px] text-slate-600 flex justify-between items-center">
+                <span>Rata-rata/Kirim:</span>
+                <span class="font-bold text-amber-900" id="afcoPerShipment">- ekor</span>
+              </div>
+            </div>
+
+            <!-- DELTA CARD (20%) -->
+            <div class="bg-gradient-to-b from-emerald-50/80 to-teal-50/40 border border-emerald-200/80 rounded-2xl p-4 relative overflow-hidden flex flex-col justify-between shadow-sm">
+              <div class="absolute top-0 right-0 bg-emerald-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-bl-lg">20%</div>
+              <div>
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="w-3 h-3 rounded-full bg-emerald-600"></span>
+                  <h3 class="font-extrabold text-emerald-900 text-sm tracking-wide">DELTA</h3>
+                </div>
+                <div class="text-2xl font-black text-slate-900 my-1" id="deltaQty">0 <span class="text-xs font-semibold text-slate-500">ekor</span></div>
+                <div class="text-[11px] text-emerald-700 font-medium" id="deltaFreq">4x Kirim / Bulan</div>
+              </div>
+              <div class="mt-4 pt-3 border-t border-emerald-200/60 text-[11px] text-slate-600 flex justify-between items-center">
+                <span>Rata-rata/Kirim:</span>
+                <span class="font-bold text-emerald-900" id="deltaPerShipment">- ekor</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- DETAILED PRE-ORDER & DELIVERY SCHEDULE MODEL (EXCEL PATTERN) -->
+          <div id="scheduleSection" class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-calendar-check text-indigo-600 text-sm"></i>
+                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider">Pemetaan Jadwal Kirim Mingguan (Format PO Japfa/Excel)</h4>
+              </div>
+              <span class="text-[11px] font-bold text-indigo-600 bg-indigo-100/80 px-2 py-0.5 rounded">Kelipatan 10 Ekor</span>
+            </div>
+
+            <!-- SCHEDULE TABLE -->
+            <div class="overflow-x-auto custom-scrollbar">
+              <table class="w-full text-left text-xs text-slate-700 border-collapse">
+                <thead>
+                  <tr class="bg-slate-200/80 text-slate-800 font-bold border-b border-slate-300">
+                    <th class="py-2 px-3">Supplier</th>
+                    <th class="py-2 px-3">Alokasi</th>
+                    <th class="py-2 px-3">Frekuensi</th>
+                    <th class="py-2 px-3">Hari Pengiriman</th>
+                    <th class="py-2 px-3">Simulasi Kirim / Batch</th>
+                    <th class="py-2 px-3 text-right">Total Order</th>
+                  </tr>
+                </thead>
+                <tbody id="scheduleTableBody" class="divide-y divide-slate-200">
+                  <tr>
+                    <td colspan="6" class="py-4 text-center text-slate-400 italic">Belum ada data input. Masukkan data store di atas.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="text-[11px] text-slate-500 flex items-center justify-between pt-1">
+              <span><i class="fa-solid fa-info-circle text-amber-500 mr-1"></i> Pre-order (PO) diajukan maksimal <strong>H-2</strong> sebelum jadwal pengiriman.</span>
+              <span class="font-semibold text-slate-700">Minimal 4x pengiriman per bulan per supplier.</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- BOTTOM SECTION: RECAP TABLE & FILTER BY MONTH -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-6">
+      
+      <!-- RECAP HEADER -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <h2 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-indigo-600"></i>
+            Daftar Rekapitulasi Kebutuhan Ayam Store
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Riwayat order tersimpan berdasarkan inputan store dan pilihan periode bulan.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- FILTER BUTTONS BY MONTH -->
+          <span class="text-xs font-bold text-slate-500 uppercase mr-1">Filter Bulan:</span>
+          <div id="monthFilterContainer" class="flex flex-wrap items-center gap-1.5">
+            <!-- Dynamic Month Filter Buttons inserted via JS -->
+          </div>
+
+          <button onclick="clearAllData()" class="ml-2 text-xs text-rose-600 hover:text-rose-800 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg border border-rose-200 transition-all font-semibold flex items-center gap-1">
+            <i class="fa-solid fa-trash-can"></i> Hapus Semua
+          </button>
+        </div>
+      </div>
+
+      <!-- RECAP TABLE -->
+      <div class="overflow-x-auto custom-scrollbar">
+        <table class="w-full text-left text-xs text-slate-700 border-collapse">
+          <thead>
+            <tr class="bg-slate-900 text-white font-bold tracking-wide rounded-lg">
+              <th class="py-3 px-3.5 rounded-l-lg">No</th>
+              <th class="py-3 px-3.5">Nama Store</th>
+              <th class="py-3 px-3.5">Wilayah / Area</th>
+              <th class="py-3 px-3.5 text-center">Bulan</th>
+              <th class="py-3 px-3.5 text-right">Total (Ekor)</th>
+              <th class="py-3 px-3.5 text-center">Japfa (50%)</th>
+              <th class="py-3 px-3.5 text-center">Afco (30%)</th>
+              <th class="py-3 px-3.5 text-center">Delta (20%)</th>
+              <th class="py-3 px-3.5 text-center">Hari Kirim</th>
+              <th class="py-3 px-3.5 text-center rounded-r-lg">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="recapTableBody" class="divide-y divide-slate-100 font-medium">
+            <!-- Dynamic Rows -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- FOOTER STATS IN RECAP -->
+      <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+        <div class="flex items-center gap-6">
+          <div>
+            <span class="text-slate-500">Total Store Terinput:</span>
+            <span id="recapTotalCount" class="font-extrabold text-slate-900 ml-1">0 Store</span>
+          </div>
+          <div>
+            <span class="text-slate-500">Grand Total Ayam:</span>
+            <span id="recapGrandTotal" class="font-extrabold text-indigo-700 ml-1">0 Ekor</span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 text-slate-600">
+          <span><strong class="text-blue-700">Japfa:</strong> <span id="recapJapfaTotal">0</span> ekor</span> |
+          <span><strong class="text-amber-700">Afco:</strong> <span id="recapAfcoTotal">0</span> ekor</span> |
+          <span><strong class="text-emerald-700">Delta:</strong> <span id="recapDeltaTotal">0</span> ekor</span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- MODAL DETAIL JADWAL SHIPMENT PER STORE -->
+  <div id="scheduleModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 max-w-2xl w-full p-6 space-y-4 relative animate-fade-in">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+        <div class="w-10 h-10 bg-indigo-100 text-indigo-700 rounded-xl flex items-center justify-center font-bold">
+          <i class="fa-solid fa-truck-ramp-box"></i>
+        </div>
+        <div>
+          <h3 id="modalStoreTitle" class="text-base font-extrabold text-slate-900">Detail Schedule PO Store</h3>
+          <p id="modalStoreSub" class="text-xs text-slate-500"></p>
+        </div>
+      </div>
+
+      <div id="modalScheduleContent" class="space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
+        <!-- Content injected via JS -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-100 flex justify-end">
+        <button onclick="closeModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs px-5 py-2.5 rounded-xl">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-6 border-t border-slate-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 text-center space-y-1">
+      <p class="font-semibold text-slate-300">Sistem Input & Pemetaan PO Ayam Geprek Sa'i / Hajj Chicken © 2026</p>
+      <p class="text-slate-500">Integrated with 65 Store PO Japfa Database November 2026</p>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // 1. DATASET 65 STORE REGISTERED FROM EXCEL (PO JAPFA NOV 2026)
+    const STORE_DATA = [
+      {"name": "AGS JOMBANG PLOSO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS JOMBANG MOJOAGUNG", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS JOMBANG RE", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS JOMBANG H.A", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS JOMBANG DR SUTOMO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS JOMBANG adityawarman", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS TAMBAKREJO jombang", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS PAHLAWAN", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS HAYAM WURUK", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS VETERAN", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS DIPONEGORO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS SEMANDING", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS KALIJOGO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS BALEN", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS BAURNO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS SROYO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS PONCO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS VETERAN bojonegoro", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS GIANT bojonegoro", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS POLIM bojonegoro", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS DANDER bojonegoro", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS NGANJUK", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS NGANJUK BREBEK", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS NGANJUK A.YANI", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS AR.SALEH NGANJUK", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS PONOROGO", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MAGETAN jl.panglima sudirman", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MAGETAN monginsidi", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MADIUN MARHADI", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MAGETAN mt haryono", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MAGETAN temboro", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS SUNAN DRAJAT lamongan", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS VETERAN lamongan", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS BABAT gotongroyong", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS Tulangan Sidoarjo", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS  BANARAN babat", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS WIDANG tuban", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS TANGGULREJO babat", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS BEJI TULUNGAGUNG", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS NGUNUT TULUNGAGUNG", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS TEUKU UMAR TULUNGAGUNG", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS WATES KEDIRI", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS MOJOKERTO MERI", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS GURAH KEDIRI", "region": "Wilayah 1 (Jombang - Kediri - Madiun - Bojonegoro - Lamongan - Tuban)", "days": ["Senin", "Rabu"]},
+      {"name": "AGS PASURUAN indragiri", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS PASURUAN BUGUL", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS PASURUAN GONDANG WETAN", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS PASURUAN PANGSUD 2", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS PASURUAN BANGIL", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS WARUNG DOWO PASURUAN", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS WONOREJO PASURUAN", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS KALITENGAH pandaan", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS PASURUAN GUNUNG GANGSIR", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS GRESIK CERME lamongan", "region": "Wilayah 2 (Pasuruan - Sidoarjo - Mojokerto - Pandaan - Gresik)", "days": ["Selasa", "Jumat", "Sabtu"]},
+      {"name": "AGS TEGAL BESAR JEMBER", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS JEMBER BALUNG", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS JEMBER PUGER", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS JEMBER KARIMATA", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS JEMBER MASTRIP", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS JEMBER KALISAT", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS BONDOWOSO", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS LUMAJANG PASIRIAN", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS LUMAJANG GHOZALI", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS SITUBONDO", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]},
+      {"name": "AGS BESUKI", "region": "Wilayah 3 (Probolinggo - Situbondo - Bondowoso - Jember - Lumajang)", "days": ["Kamis", "Sabtu"]}
+    ];
+
+    // Local Storage Data Array
+    let orderList = JSON.parse(localStorage.getItem('chickenOrdersData') || '[]');
+    let currentFilterMonth = 'ALL';
+
+    // INITIALIZATION
+    document.addEventListener("DOMContentLoaded", () => {
+      populateStoreDatalist();
+      renderRecapTable();
+      
+      // Auto fill if default sample store selected
+      if(STORE_DATA.length > 0) {
+        document.getElementById("inputStore").value = STORE_DATA[0].name;
+        autoFillRegion(STORE_DATA[0].name);
+      }
+    });
+
+    // Populate Datalist
+    function populateStoreDatalist() {
+      const datalist = document.getElementById("storeOptions");
+      datalist.innerHTML = STORE_DATA.map(s => `<option value="${s.name}">${s.region}</option>`).join('');
+    }
+
+    // Auto-fill Region and Delivery Days when Store selected
+    function autoFillRegion(storeName) {
+      const matched = STORE_DATA.find(s => s.name.trim().toLowerCase() === storeName.trim().toLowerCase());
+      const areaInput = document.getElementById("inputArea");
+      const badgeContainer = document.getElementById("scheduleDaysBadge");
+      const badgeDays = document.getElementById("badgeDays");
+
+      if (matched) {
+        areaInput.value = matched.region;
+        badgeDays.textContent = matched.days.join(" & ");
+        badgeContainer.classList.remove("hidden");
+      } else {
+        badgeContainer.classList.add("hidden");
+      }
+    }
+
+    // Helper: Round to multiple of 10
+    function roundTo10(num) {
+      return Math.round(num / 10) * 10;
+    }
+
+    // CALCULATE & SAVE ORDER
+    function calculateAndSaveOrder(event) {
+      event.preventDefault();
+
+      const storeName = document.getElementById("inputStore").value.trim();
+      const areaName = document.getElementById("inputArea").value.trim();
+      const totalQtyRaw = parseInt(document.getElementById("inputQty").value) || 0;
+      const month = document.getElementById("inputMonth").value;
+
+      if (!storeName || !areaName || totalQtyRaw <= 0) {
+        alert("Mohon lengkapi semua data inputan!");
+        return;
+      }
+
+      // Round total to 10 ekor
+      const totalQty = Math.max(10, roundTo10(totalQtyRaw));
+
+      // 1. Calculate Allocation
+      // Japfa 50%, Afco 30%, Delta 20%
+      let rawJapfa = totalQty * 0.50;
+      let rawAfco = totalQty * 0.30;
+      let rawDelta = totalQty * 0.20;
+
+      // Adjust rounding to keep sum == totalQty
+      let japfa = roundTo10(rawJapfa);
+      let afco = roundTo10(rawAfco);
+      let delta = totalQty - japfa - afco;
+
+      if (delta < 0) {
+        delta = 0;
+        afco = totalQty - japfa;
+      }
+
+      // Matched Store Days Rule
+      const matchedStore = STORE_DATA.find(s => s.name.trim().toLowerCase() === storeName.toLowerCase());
+      const deliveryDays = matchedStore ? matchedStore.days : ["Senin", "Rabu"];
+
+      // Frequency calculation (min 4x/month)
+      // Japfa gets 8x if region has 2-3 delivery days/week, else 4x
+      const japfaFreq = deliveryDays.length >= 2 ? 8 : 4;
+      const afcoFreq = 4;
+      const deltaFreq = 4;
+
+      const japfaBatch = Math.ceil(japfa / japfaFreq / 10) * 10;
+      const afcoBatch = Math.ceil(afco / afcoFreq / 10) * 10;
+      const deltaBatch = Math.ceil(delta / deltaFreq / 10) * 10;
+
+      // Update Top Result Cards UI
+      document.getElementById("resultSubtitle").textContent = `Simulasi untuk store: ${storeName} (${month})`;
+      const activeBadge = document.getElementById("activeStoreBadge");
+      activeBadge.textContent = `${storeName} - ${totalQty} Ekor`;
+      activeBadge.classList.remove("hidden");
+
+      document.getElementById("japfaQty").innerHTML = `${japfa} <span class="text-xs font-semibold text-slate-500">ekor</span>`;
+      document.getElementById("japfaFreq").textContent = `${japfaFreq}x Kirim / Bulan (${deliveryDays.join(" & ")})`;
+      document.getElementById("japfaPerShipment").textContent = `~${japfaBatch} ekor/batch`;
+
+      document.getElementById("afcoQty").innerHTML = `${afco} <span class="text-xs font-semibold text-slate-500">ekor</span>`;
+      document.getElementById("afcoFreq").textContent = `${afcoFreq}x Kirim / Bulan (1x Seminggu)`;
+      document.getElementById("afcoPerShipment").textContent = `~${afcoBatch} ekor/batch`;
+
+      document.getElementById("deltaQty").innerHTML = `${delta} <span class="text-xs font-semibold text-slate-500">ekor</span>`;
+      document.getElementById("deltaFreq").textContent = `${deltaFreq}x Kirim / Bulan (1x Seminggu)`;
+      document.getElementById("deltaPerShipment").textContent = `~${deltaBatch} ekor/batch`;
+
+      // Render Schedule Table
+      const schedBody = document.getElementById("scheduleTableBody");
+      schedBody.innerHTML = `
+        <tr class="hover:bg-blue-50/50">
+          <td class="py-2.5 px-3 font-bold text-blue-900">JAPFA</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-700">50%</td>
+          <td class="py-2.5 px-3 font-semibold">${japfaFreq}x / Bulan</td>
+          <td class="py-2.5 px-3 font-medium text-slate-600">${deliveryDays.join(" & ")}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${japfaBatch} ekor x ${japfaFreq} batch</td>
+          <td class="py-2.5 px-3 text-right font-extrabold text-blue-800">${japfa} ekor</td>
+        </tr>
+        <tr class="hover:bg-amber-50/50">
+          <td class="py-2.5 px-3 font-bold text-amber-900">AFCO</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-700">30%</td>
+          <td class="py-2.5 px-3 font-semibold">${afcoFreq}x / Bulan</td>
+          <td class="py-2.5 px-3 font-medium text-slate-600">${deliveryDays[0] || 'Senin'}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${afcoBatch} ekor x ${afcoFreq} batch</td>
+          <td class="py-2.5 px-3 text-right font-extrabold text-amber-800">${afco} ekor</td>
+        </tr>
+        <tr class="hover:bg-emerald-50/50">
+          <td class="py-2.5 px-3 font-bold text-emerald-900">DELTA</td>
+          <td class="py-2.5 px-3 font-semibold text-slate-700">20%</td>
+          <td class="py-2.5 px-3 font-semibold">${deltaFreq}x / Bulan</td>
+          <td class="py-2.5 px-3 font-medium text-slate-600">${deliveryDays[1] || 'Rabu'}</td>
+          <td class="py-2.5 px-3 font-bold text-slate-800">${deltaBatch} ekor x ${deltaFreq} batch</td>
+          <td class="py-2.5 px-3 text-right font-extrabold text-emerald-800">${delta} ekor</td>
+        </tr>
+      `;
+
+      // Save Record to LocalStorage List
+      const newEntry = {
+        id: Date.now(),
+        storeName: storeName,
+        areaName: areaName,
+        month: month,
+        totalQty: totalQty,
+        japfaQty: japfa,
+        afcoQty: afco,
+        deltaQty: delta,
+        days: deliveryDays,
+        japfaFreq: japfaFreq,
+        afcoFreq: afcoFreq,
+        deltaFreq: deltaFreq,
+        japfaBatch: japfaBatch,
+        afcoBatch: afcoBatch,
+        deltaBatch: deltaBatch,
+        createdAt: new Date().toISOString()
+      };
+
+      // Upsert: Replace if same store & month exists or push new
+      const existingIdx = orderList.findIndex(item => item.storeName.toLowerCase() === storeName.toLowerCase() && item.month === month);
+      if(existingIdx >= 0) {
+        orderList[existingIdx] = newEntry;
+      } else {
+        orderList.unshift(newEntry);
+      }
+
+      localStorage.setItem('chickenOrdersData', JSON.stringify(orderList));
+
+      // Refresh Recap Table
+      renderRecapTable();
+    }
+
+    // RENDER RECAP TABLE & FILTERS
+    function renderRecapTable() {
+      // 1. Month Filter Buttons
+      const monthsPresent = Array.from(new Set(orderList.map(item => item.month)));
+      const filterContainer = document.getElementById("monthFilterContainer");
+
+      let filterBtnsHTML = `<button onclick="setFilterMonth('ALL')" class="text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all ${currentFilterMonth === 'ALL' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}">Semua Bulan</button>`;
+
+      monthsPresent.forEach(m => {
+        const active = currentFilterMonth === m;
+        filterBtnsHTML += `<button onclick="setFilterMonth('${m}')" class="text-xs px-3 py-1.5 rounded-lg border font-semibold transition-all ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-200'}">${m}</button>`;
+      });
+
+      filterContainer.innerHTML = filterBtnsHTML;
+
+      // Filtered data
+      const filtered = currentFilterMonth === 'ALL' ? orderList : orderList.filter(item => item.month === currentFilterMonth);
+
+      const tableBody = document.getElementById("recapTableBody");
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="10" class="py-8 text-center text-slate-400 font-normal">
+              <i class="fa-solid fa-folder-open text-2xl mb-2 block"></i>
+              Belum ada data kebutuhan orderan tersimpan. Silakan isi form di atas.
+            </td>
+          </tr>
+        `;
+        document.getElementById("recapTotalCount").textContent = "0 Store";
+        document.getElementById("recapGrandTotal").textContent = "0 Ekor";
+        document.getElementById("recapJapfaTotal").textContent = "0";
+        document.getElementById("recapAfcoTotal").textContent = "0";
+        document.getElementById("recapDeltaTotal").textContent = "0";
+        return;
+      }
+
+      let grandTotal = 0;
+      let totalJapfa = 0;
+      let totalAfco = 0;
+      let totalDelta = 0;
+
+      let rowsHTML = "";
+      filtered.forEach((item, index) => {
+        grandTotal += item.totalQty;
+        totalJapfa += item.japfaQty;
+        totalAfco += item.afcoQty;
+        totalDelta += item.deltaQty;
+
+        rowsHTML += `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-3.5 text-slate-400 font-bold">${index + 1}</td>
+            <td class="py-3 px-3.5 font-bold text-slate-900">${item.storeName}</td>
+            <td class="py-3 px-3.5 text-slate-600 text-[11px] max-w-[200px] truncate" title="${item.areaName}">${item.areaName}</td>
+            <td class="py-3 px-3.5 text-center">
+              <span class="bg-indigo-50 text-indigo-700 font-bold text-[11px] px-2.5 py-0.5 rounded-full border border-indigo-200">${item.month}</span>
+            </td>
+            <td class="py-3 px-3.5 text-right font-black text-slate-900">${item.totalQty.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-center font-bold text-blue-700 bg-blue-50/40">${item.japfaQty.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-center font-bold text-amber-700 bg-amber-50/40">${item.afcoQty.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-center font-bold text-emerald-700 bg-emerald-50/40">${item.deltaQty.toLocaleString('id-ID')}</td>
+            <td class="py-3 px-3.5 text-center text-[11px] font-semibold text-slate-600">${item.days.join(", ")}</td>
+            <td class="py-3 px-3.5 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openScheduleModal(${item.id})" title="Lihat Jadwal Schedule Kirim" class="w-7 h-7 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-lg flex items-center justify-center transition-all">
+                  <i class="fa-solid fa-calendar-days text-xs"></i>
+                </button>
+                <button onclick="deleteItem(${item.id})" title="Hapus Data" class="w-7 h-7 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center transition-all">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+
+      tableBody.innerHTML = rowsHTML;
+
+      document.getElementById("recapTotalCount").textContent = `${filtered.length} Store`;
+      document.getElementById("recapGrandTotal").textContent = `${grandTotal.toLocaleString('id-ID')} Ekor`;
+      document.getElementById("recapJapfaTotal").textContent = totalJapfa.toLocaleString('id-ID');
+      document.getElementById("recapAfcoTotal").textContent = totalAfco.toLocaleString('id-ID');
+      document.getElementById("recapDeltaTotal").textContent = totalDelta.toLocaleString('id-ID');
+    }
+
+    function setFilterMonth(m) {
+      currentFilterMonth = m;
+      renderRecapTable();
+    }
+
+    function deleteItem(id) {
+      if(confirm("Apakah Anda yakin ingin menghapus data store ini?")) {
+        orderList = orderList.filter(item => item.id !== id);
+        localStorage.setItem('chickenOrdersData', JSON.stringify(orderList));
+        renderRecapTable();
+      }
+    }
+
+    function clearAllData() {
+      if(confirm("PERINGATAN: Semua data rekapitulasi kebutuhan ayam akan dihapus. Lanjutkan?")) {
+        orderList = [];
+        localStorage.removeItem('chickenOrdersData');
+        renderRecapTable();
+      }
+    }
+
+    // MODAL SCHEDULE LOGIC
+    function openScheduleModal(id) {
+      const item = orderList.find(i => i.id === id);
+      if(!item) return;
+
+      document.getElementById("modalStoreTitle").textContent = item.storeName;
+      document.getElementById("modalStoreSub").textContent = `${item.areaName} | Periode ${item.month} | Total ${item.totalQty} Ekor`;
+
+      const modalContent = document.getElementById("modalScheduleContent");
+
+      modalContent.innerHTML = `
+        <div class="bg-indigo-900 text-white p-4 rounded-xl space-y-1">
+          <div class="text-xs text-indigo-200">Kebutuhan Bulanan Store</div>
+          <div class="text-2xl font-black">${item.totalQty} Ekor / Bulan</div>
+          <div class="text-xs text-indigo-300">Hari Kirim Rutin: ${item.days.join(" & ")}</div>
+        </div>
+
+        <div class="space-y-3">
+          <h4 class="font-bold text-slate-900 text-xs uppercase tracking-wider">Tabel Alokasi & Pengiriman Minggu 1 s/d 4 (${item.month})</h4>
+
+          <!-- JAPFA DETAILED SCHEDULE -->
+          <div class="border border-blue-200 rounded-xl overflow-hidden">
+            <div class="bg-blue-600 text-white font-bold text-xs px-3.5 py-2 flex justify-between items-center">
+              <span>JAPFA (50%) - Total ${item.japfaQty} Ekor</span>
+              <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px]">${item.japfaFreq}x Kirim/Bulan</span>
+            </div>
+            <div class="p-3 bg-blue-50/30 text-xs text-slate-700 space-y-1.5">
+              <p>• <strong>Jadwal Pengiriman:</strong> Setiap hari <strong>${item.days.join(" & ")}</strong></p>
+              <p>• <strong>Estimasi Ukuran Order:</strong> ±${item.japfaBatch} ekor per kali kirim (Kelipatan 10 ekor)</p>
+              <p>• <strong>Aturan Pre-Order (PO):</strong> Input H-2 sebelum pengiriman pukul 12.00 WIB</p>
+            </div>
+          </div>
+
+          <!-- AFCO DETAILED SCHEDULE -->
+          <div class="border border-amber-200 rounded-xl overflow-hidden">
+            <div class="bg-amber-500 text-white font-bold text-xs px-3.5 py-2 flex justify-between items-center">
+              <span>AFCO (30%) - Total ${item.afcoQty} Ekor</span>
+              <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px]">${item.afcoFreq}x Kirim/Bulan</span>
+            </div>
+            <div class="p-3 bg-amber-50/30 text-xs text-slate-700 space-y-1.5">
+              <p>• <strong>Jadwal Pengiriman:</strong> Setiap <strong>${item.days[0] || 'Senin'}</strong> (Minggu I, II, III, IV)</p>
+              <p>• <strong>Estimasi Ukuran Order:</strong> ±${item.afcoBatch} ekor per kali kirim</p>
+              <p>• <strong>Aturan Pre-Order (PO):</strong> Confirm PO di sistem H-1 sore</p>
+            </div>
+          </div>
+
+          <!-- DELTA DETAILED SCHEDULE -->
+          <div class="border border-emerald-200 rounded-xl overflow-hidden">
+            <div class="bg-emerald-600 text-white font-bold text-xs px-3.5 py-2 flex justify-between items-center">
+              <span>DELTA (20%) - Total ${item.deltaQty} Ekor</span>
+              <span class="bg-white/20 text-white px-2 py-0.5 rounded text-[10px]">${item.deltaFreq}x Kirim/Bulan</span>
+            </div>
+            <div class="p-3 bg-emerald-50/30 text-xs text-slate-700 space-y-1.5">
+              <p>• <strong>Jadwal Pengiriman:</strong> Setiap <strong>${item.days[1] || 'Rabu'}</strong> (Minggu I, II, III, IV)</p>
+              <p>• <strong>Estimasi Ukuran Order:</strong> ±${item.deltaBatch} ekor per kali kirim</p>
+              <p>• <strong>Aturan Pre-Order (PO):</strong> PO sistem otomatis setiap awal minggu</p>
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      document.getElementById("scheduleModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("scheduleModal").classList.add("hidden");
+    }
+  </script>
+</body>
+</html>
